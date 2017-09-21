@@ -5,6 +5,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
 
+const passport = require('passport');
+const BasicStrategy = require('passport-http').BasicStrategy;
+const bcrypt = require('bcryptjs');
+
 const {DATABASE_URL, PORT} = require('./config');
 const {BlogPost, User} = require('./models');
 
@@ -14,6 +18,41 @@ app.use(morgan('common'));
 app.use(bodyParser.json());
 
 mongoose.Promise = global.Promise;
+
+// Basic Strategy
+const basicStrategy = new BasicStrategy((username, password, done) => {
+  let user;
+  User
+    .findOne({username})
+    .then(results => {
+      user = results;
+
+      if(!user) {
+        return Promise.reject({
+          reason: 'LoginError',
+          message: 'Incorrect username',
+          location: 'username'
+        });
+      }
+      return user.validatePassword(password);
+    })
+    .then(isValid => {
+      if(!isValid) {
+        return Promise.reject({
+          reason: 'LoginError',
+          message: 'Incorrect password',
+          location: 'password'
+        });
+      }
+      return done(null, false);
+    })
+    .catch(err => {
+      if(err.reason === 'LoginError') {
+        return done(null, false);
+      }
+      return done(err);
+    });
+});
 
 
 app.get('/posts', (req, res) => {
@@ -43,7 +82,7 @@ app.post('/posts', (req, res) => {
   for (let i=0; i<requiredFields.length; i++) {
     const field = requiredFields[i];
     if (!(field in req.body)) {
-      const message = `Missing \`${field}\` in request body`
+      const message = `Missing \`${field}\` in request body`;
       console.error(message);
       return res.status(400).send(message);
     }
@@ -111,12 +150,15 @@ app.post('/users', (req, res) => {
     .find({username})
     .count()
     .then(count => {
+      console.log('count: ' + count);
       if(count > 0) {
         return res.status(400).json({message: 'Bad Request'});
       }
+      console.log('username: ' + username);
       return User.hashPassword(password);
     })
     .then(hash => {
+      console.log('creating user');
       return User
         .create({
           username: username,
