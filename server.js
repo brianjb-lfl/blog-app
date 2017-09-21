@@ -54,6 +54,12 @@ const basicStrategy = new BasicStrategy((username, password, done) => {
     });
 });
 
+passport.use('myBasic', basicStrategy);
+
+app.use(passport.initialize());
+
+const authenticate = passport.authenticate('myBasic', {session: false});
+
 
 app.get('/posts', (req, res) => {
   BlogPost
@@ -105,6 +111,8 @@ app.post('/posts', (req, res) => {
 
 
 // ***** NEW CODE BELOW
+
+
 
 app.post('/users', (req, res) => {
 
@@ -179,6 +187,14 @@ app.post('/users', (req, res) => {
       res.status(500).json({code: 500, message: 'Internal server error'});
     });
 });
+
+
+app.delete('/users', authenticate, function(req, res) {
+  res.json(req.user.apiRepr());
+});
+
+
+
 
 // ***** NEW CODE ABOVE
 
