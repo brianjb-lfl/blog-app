@@ -65,21 +65,43 @@ app.post('/posts', (req, res) => {
 
 
 app.post('/users', (req, res) => {
-  // check for req.body present
-  // username in req.body
-  // username = type string
-  // username not empty string
   // password in data from body
   // password type string
   // password not empty string
 
-if(!req.body) {
-  return res.status(400).json({message: 'Request body missing'});
-}
+  if(!req.body) {
+    return res.status(400).json({message: 'Request body missing'});
+  }
 
-if(!req.body.username) {
-  
-}
+  if(!('username' in req.body)) {
+    return res.status(422).json({message: 'Username field missing'});
+  }
+
+  let {username, password, lastName, firstName} = req.body;
+
+  if(typeof username !== 'string') {
+    return res.status(422).json({message: 'Invalid username type'});
+  }
+
+  username = username.trim();
+
+  if(username === '') {
+    return res.status(422).json({messge: 'Invalid username'});
+  }
+
+  if(!('password' in req.body)) {
+    return res.status(422).json({message: 'Password missing'});
+  }
+
+  if(typeof password !== 'string') {
+    return res.status(422).json({message: 'Invalid password'});
+  }
+
+  password = password.trim();
+
+  if(password === '') {
+    return res.status(422).json({messge: 'Invalid password'});
+
 
 
 }
