@@ -30,8 +30,8 @@ const basicStrategy = new BasicStrategy((username, password, done) => {
       if(!user) {
         return Promise.reject({
           reason: 'LoginError',
-          message: 'Incorrect username',
-          location: 'username'
+          message: 'Invalid login',
+          //location: 'username'
         });
       }
       return user.validatePassword(password);
@@ -40,11 +40,11 @@ const basicStrategy = new BasicStrategy((username, password, done) => {
       if(!isValid) {
         return Promise.reject({
           reason: 'LoginError',
-          message: 'Incorrect password',
-          location: 'password'
+          message: 'Invalid login',
+          //location: 'password'
         });
       }
-      return done(null, false);
+      return done(null, user);
     })
     .catch(err => {
       if(err.reason === 'LoginError') {
@@ -190,9 +190,9 @@ app.post('/users', (req, res) => {
 });
 
 
-app.delete('/users', authenticate, function(req, res) {
-  res.json(req.user.apiRepr());
-});
+// app.delete('/users', authenticate, function(req, res) {
+//   res.json(req.user.apiRepr());
+// });
 
 
 
@@ -203,7 +203,7 @@ app.delete('/users', authenticate, function(req, res) {
 
 
 
-app.delete('/posts/:id', (req, res) => {
+app.delete('/posts/:id', authenticate, (req, res) => {
   BlogPost
     .findByIdAndRemove(req.params.id)
     .then(() => {
@@ -214,6 +214,10 @@ app.delete('/posts/:id', (req, res) => {
       res.status(500).json({error: 'something went terribly wrong'});
     });
 });
+
+
+
+
 
 
 app.put('/posts/:id', (req, res) => {
@@ -239,7 +243,7 @@ app.put('/posts/:id', (req, res) => {
 
 
 app.delete('/:id', (req, res) => {
-  BlogPosts
+  BlogPost
     .findByIdAndRemove(req.params.id)
     .then(() => {
       console.log(`Deleted blog post with id \`${req.params.ID}\``);
