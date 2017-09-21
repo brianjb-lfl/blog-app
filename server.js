@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const morgan = require('morgan');
 
 const {DATABASE_URL, PORT} = require('./config');
-const {BlogPost} = require('./models');
+const {BlogPost, User} = require('./models');
 
 const app = express();
 
@@ -57,12 +57,15 @@ app.post('/posts', (req, res) => {
     })
     .then(blogPost => res.status(201).json(blogPost.apiRepr()))
     .catch(err => {
-        console.error(err);
-        res.status(500).json({error: 'Something went wrong'});
+      console.error(err);
+      res.status(500).json({error: 'Something went wrong'});
     });
 
 });
 
+
+
+// ***** NEW CODE BELOW
 
 app.post('/users', (req, res) => {
   // password in data from body
@@ -101,12 +104,36 @@ app.post('/users', (req, res) => {
 
   if(password === '') {
     return res.status(422).json({messge: 'Invalid password'});
+  }
+  // check for existing user
 
+  return User
+    .find({username})
+    .count()
+    .then(count => {
+      if(count > 0) {
+        return res.status(400).json({message: 'Bad Request'});
+      }
+      return User.hashPassword(password);
+    })
+    .then(hash => {
+      return User
+        .create({
+          username: username,
+          password: hash,
+          firstName: firstName,
+          lastName: lastName
+        });
+    })
+    .then(user => {
+      return res.status(201).json(user.apiRepr());
+    })
+    .catch(err => {
+      res.status(500).json({message: 'Internal server error'});
+    });
+});
 
-
-}
-
-
+// ***** NEW CODE ABOVE
 
 
 
