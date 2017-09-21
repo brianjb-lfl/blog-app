@@ -1,5 +1,6 @@
 'use strict';
 
+const passport = require('passport');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 
@@ -47,7 +48,7 @@ UserSchema.methods.validatePassword = function(password) {
   return bcrypt.compare(password, this.password);
 };
 
-UserSchema.methods.hashPassword = function(password) {
+UserSchema.statics.hashPassword = function(password) {
   return bcrypt.hash(password, 10);
 };
 
@@ -55,4 +56,4 @@ const BlogPost = mongoose.model('BlogPost', blogPostSchema);
 const User = mongoose.model('User', UserSchema);
 
 module.exports = {BlogPost, User};
-// {BlogPost{ ....}, User{...}}
+

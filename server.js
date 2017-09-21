@@ -107,9 +107,6 @@ app.post('/posts', (req, res) => {
 // ***** NEW CODE BELOW
 
 app.post('/users', (req, res) => {
-  // password in data from body
-  // password type string
-  // password not empty string
 
   if(!req.body) {
     return res.status(400).json({message: 'Request body missing'});
@@ -152,7 +149,12 @@ app.post('/users', (req, res) => {
     .then(count => {
       console.log('count: ' + count);
       if(count > 0) {
-        return res.status(400).json({message: 'Bad Request'});
+        return Promise.reject({
+          code: 422,
+          reason: 'ValidationError',
+          message: 'Username already taken',
+          location: 'username'
+        });
       }
       console.log('username: ' + username);
       return User.hashPassword(password);
@@ -171,7 +173,10 @@ app.post('/users', (req, res) => {
       return res.status(201).json(user.apiRepr());
     })
     .catch(err => {
-      res.status(500).json({message: 'Internal server error'});
+      if (err.reason === 'ValidationError') {
+        return res.status(err.code).json(err);
+      }
+      res.status(500).json({code: 500, message: 'Internal server error'});
     });
 });
 
