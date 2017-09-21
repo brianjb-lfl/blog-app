@@ -64,6 +64,32 @@ app.post('/posts', (req, res) => {
 });
 
 
+app.post('/users', (req, res) => {
+  // check for req.body present
+  // username in req.body
+  // username = type string
+  // username not empty string
+  // password in data from body
+  // password type string
+  // password not empty string
+
+if(!req.body) {
+  return res.status(400).json({message: 'Request body missing'});
+}
+
+if(!req.body.username) {
+  
+}
+
+
+}
+
+
+
+
+
+
+
 app.delete('/posts/:id', (req, res) => {
   BlogPost
     .findByIdAndRemove(req.params.id)
