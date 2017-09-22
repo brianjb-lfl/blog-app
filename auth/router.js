@@ -4,6 +4,8 @@ const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+//passport.use('myBasic', basicStrategy);
+//passport.use('jwt', jwtStrategy);
 
 const createAuthToken = user => {
   return jwt.sign({user}, config.JWT_SECRET, {
