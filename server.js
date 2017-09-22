@@ -6,7 +6,9 @@ const mongoose = require('mongoose');
 const morgan = require('morgan');
 
 const passport = require('passport');
-const BasicStrategy = require('passport-http').BasicStrategy;
+const {basicStrategy} = require('./auth/strategies');
+//const BasicStrategy = require('passport-http').BasicStrategy;
+
 const bcrypt = require('bcryptjs');
 
 const {DATABASE_URL, PORT} = require('./config');
@@ -18,42 +20,6 @@ app.use(morgan('common'));
 app.use(bodyParser.json());
 
 mongoose.Promise = global.Promise;
-
-// Basic Strategy
-const basicStrategy = new BasicStrategy((username, password, done) => {
-  let user;
-  User
-    .findOne({username})
-    .then(results => {
-      user = results;
-
-      if(!user) {
-        return Promise.reject({
-          reason: 'LoginError',
-          message: 'Invalid login',
-          //location: 'username'
-        });
-      }
-      return user.validatePassword(password);
-    })
-    .then(isValid => {
-      if(!isValid) {
-        return Promise.reject({
-          reason: 'LoginError',
-          message: 'Invalid login',
-          //location: 'password'
-        });
-      }
-      return done(null, user);
-    })
-    .catch(err => {
-      if(err.reason === 'LoginError') {
-        console.log('error catch running');
-        return done(null, false);
-      }
-      return done(err);
-    });
-});
 
 passport.use('myBasic', basicStrategy);
 
@@ -180,6 +146,18 @@ app.post('/users', (req, res) => {
         return res.status(err.code).json(err);
       }
       res.status(500).json({code: 500, message: 'Internal server error'});
+    });
+});
+
+app.get('/users', (req, res) => {
+  User
+    .find()
+    .then(users => {
+      res.json(users.map(user => user.apiRepr()));
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({error: 'something went terribly wrong'});
     });
 });
 
