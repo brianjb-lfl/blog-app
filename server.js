@@ -84,7 +84,7 @@ app.get('/posts/:id', (req, res) => {
     });
 });
 
-app.post('/posts', (req, res) => {
+app.post('/posts', authenticate, (req, res) => {
   const requiredFields = ['title', 'content', 'author'];
   for (let i=0; i<requiredFields.length; i++) {
     const field = requiredFields[i];
@@ -108,12 +108,6 @@ app.post('/posts', (req, res) => {
     });
 
 });
-
-
-
-// ***** NEW CODE BELOW
-
-
 
 app.post('/users', (req, res) => {
 
@@ -189,20 +183,6 @@ app.post('/users', (req, res) => {
     });
 });
 
-
-// app.delete('/users', authenticate, function(req, res) {
-//   res.json(req.user.apiRepr());
-// });
-
-
-
-
-// ***** NEW CODE ABOVE
-
-
-
-
-
 app.delete('/posts/:id', authenticate, (req, res) => {
   BlogPost
     .findByIdAndRemove(req.params.id)
@@ -215,12 +195,7 @@ app.delete('/posts/:id', authenticate, (req, res) => {
     });
 });
 
-
-
-
-
-
-app.put('/posts/:id', (req, res) => {
+app.put('/posts/:id', authenticate, (req, res) => {
   if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
     res.status(400).json({
       error: 'Request path id and request body id values must match'
@@ -272,10 +247,10 @@ function runServer(databaseUrl=DATABASE_URL, port=PORT) {
         console.log(`Your app is listening on port ${port}`);
         resolve();
       })
-      .on('error', err => {
-        mongoose.disconnect();
-        reject(err);
-      });
+        .on('error', err => {
+          mongoose.disconnect();
+          reject(err);
+        });
     });
   });
 }
@@ -284,15 +259,15 @@ function runServer(databaseUrl=DATABASE_URL, port=PORT) {
 // use it in our integration tests later.
 function closeServer() {
   return mongoose.disconnect().then(() => {
-     return new Promise((resolve, reject) => {
-       console.log('Closing server');
-       server.close(err => {
-           if (err) {
-               return reject(err);
-           }
-           resolve();
-       });
-     });
+    return new Promise((resolve, reject) => {
+      console.log('Closing server');
+      server.close(err => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      });
+    });
   });
 }
 
