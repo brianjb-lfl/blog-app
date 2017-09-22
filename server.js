@@ -6,8 +6,10 @@ const mongoose = require('mongoose');
 const morgan = require('morgan');
 
 const passport = require('passport');
-const {basicStrategy} = require('./auth/strategies');
-//const BasicStrategy = require('passport-http').BasicStrategy;
+//const {basicStrategy} = require('./auth/strategies');
+
+//const {router: usersRouter} = require('./users');
+const {router: authRouter, basicStrategy, jwtStrategy} = require('./auth'); 
 
 const bcrypt = require('bcryptjs');
 
@@ -19,6 +21,24 @@ const app = express();
 app.use(morgan('common'));
 app.use(bodyParser.json());
 
+
+// CORS
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE');
+  if (req.method === 'OPTIONS') {
+    return res.send(204);
+  }
+  next();
+});
+
+app.use(passport.initialize());
+passport.use(basicStrategy);
+passport.use(jwtStrategy);
+
+app.use('/api/auth/', authRouter);
+
 mongoose.Promise = global.Promise;
 
 passport.use('myBasic', basicStrategy);
@@ -26,7 +46,6 @@ passport.use('myBasic', basicStrategy);
 app.use(passport.initialize());
 
 const authenticate = passport.authenticate('myBasic', {session: false});
-
 
 app.get('/posts', (req, res) => {
   BlogPost

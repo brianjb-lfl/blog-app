@@ -6,6 +6,10 @@ const {BasicStrategy} = require('passport-http');
 
 const {User} = require('../models');
 
+const {
+  Strategy: JwtStrategy,
+  ExtractJwt
+} = require('passport-jwt');
 
 // Basic Strategy
 const basicStrategy = new BasicStrategy((username, password, done) => {
@@ -43,6 +47,19 @@ const basicStrategy = new BasicStrategy((username, password, done) => {
     });
 });
 
+// jwt Strategy
+
+const jwtStrategy = new JwtStrategy(
+  {
+    secretOrKey: config.JWT_SECRET,
+    jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
+    algorithms: ['HS256']
+  },
+  (payload, done) => {
+    done(null, payload.user);
+  }
+);
 
 
-module.exports = {basicStrategy};
+
+module.exports = {basicStrategy, jwtStrategy};
