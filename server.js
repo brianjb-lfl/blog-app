@@ -45,7 +45,7 @@ passport.use('myBasic', basicStrategy);
 
 app.use(passport.initialize());
 
-const authenticate = passport.authenticate('myBasic', {session: false});
+const authenticate = passport.authenticate('jwt', {session: false}); //  passport.authenticate('myBasic', {session: false});
 
 app.get('/posts', (req, res) => {
   BlogPost
@@ -168,7 +168,7 @@ app.post('/users', (req, res) => {
     });
 });
 
-app.get('/users', (req, res) => {
+app.get('/users', authenticate, (req, res) => {
   User
     .find()
     .then(users => {
@@ -214,7 +214,7 @@ app.put('/posts/:id', authenticate, (req, res) => {
 });
 
 
-app.delete('/:id', (req, res) => {
+app.delete('/:id', authenticate, (req, res) => {
   BlogPost
     .findByIdAndRemove(req.params.id)
     .then(() => {
